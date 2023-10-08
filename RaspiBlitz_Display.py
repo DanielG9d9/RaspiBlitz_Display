@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import matplotlib.ticker as ticker
 import datetime
+import matplotlib.dates as mdates  # Import the mdates module
 
 # Define the Coinbase Pro API endpoints
 base_url = 'https://api.pro.coinbase.com'
@@ -46,9 +47,13 @@ timestamps_ethereum = [datetime.datetime.utcfromtimestamp(ts) for ts in timestam
 # Create a new figure and axis
 fig, ax1 = plt.subplots()
 
-# Plot Bitcoin prices on the left axis in orange
-ax1.plot(timestamps_bitcoin, bitcoin_prices, label='Bitcoin', color='orange')
-# ax1.set_xlabel('Time (24 Hour Format)')
+# Convert timestamps to matplotlib date format using mdates.date2num
+timestamps_bitcoin_matplotlib = mdates.date2num(timestamps_bitcoin)
+timestamps_ethereum_matplotlib = mdates.date2num(timestamps_ethereum)
+
+# Plot Bitcoin prices as a line chart on the left axis in orange
+ax1.plot_date(timestamps_bitcoin_matplotlib, bitcoin_prices, '-o', label='Bitcoin', color='orange')
+ax1.set_xlabel('Time (24 Hour Format)')
 ax1.set_ylabel('Bitcoin Price (USD)', color='black')
 ax1.tick_params(axis='y', labelcolor='black')
 ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('$%d'))
@@ -58,7 +63,7 @@ ax1.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '${:,.0f}'.for
 
 # Create a secondary axis for Ethereum prices in blue
 ax2 = ax1.twinx()
-ax2.plot(timestamps_ethereum, ethereum_prices, label='Ethereum', color='blue')
+ax2.plot_date(timestamps_ethereum_matplotlib, ethereum_prices, '-o', label='Ethereum', color='blue')
 ax2.set_ylabel('Ether Price (USD)', color='black')
 ax2.tick_params(axis='y', labelcolor='black')
 ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('$%d'))
@@ -66,28 +71,28 @@ ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('$%d'))
 # Use FuncFormatter to add commas to Y2 axis
 ax2.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '${:,.0f}'.format(x)))
 
-
 # Combine the legends from both axes
 lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
 lines = lines1 + lines2
 labels = labels1 + labels2
-ax1.legend(lines, labels, loc='best')
+ax1.legend(lines, labels, loc='upper center')
 
 # Set the title
 plt.title('Bitcoin and Ether Prices (Last 24 Hours)')
 
 # Create timestamps every 6 hours
-interval = 6  # hours
-start_time = timestamps_bitcoin[0]
-end_time = timestamps_bitcoin[-1]
-timestamps_x = [start_time + datetime.timedelta(hours=i) for i in range(0, int((end_time - start_time).total_seconds() / 3600) + 1, interval)]
+interval = 3  # hours
+timestamps_x = []
+for i in range(0, len(timestamps_bitcoin), interval):
+    timestamps_x.append(timestamps_bitcoin[i])
 
-# Set the major locator for the X-axis to match the timestamps
-ax1.set_xticks(timestamps_x)
+# Convert timestamps for X-axis to matplotlib date format using mdates.date2num
+timestamps_x_matplotlib = mdates.date2num(timestamps_x)
 
-# Format x-axis to display timestamps in "00:00" format
-ax1.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: x.strftime('%H:%M')))
+# Set the major locator and formatter for the X-axis
+ax1.xaxis.set_major_locator(mticker.FixedLocator(timestamps_x_matplotlib))
+ax1.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, pos: mdates.num2date(x).strftime('%H:%M')))
 
 # Rotate x-axis labels for better visibility
 plt.xticks(rotation=45)
