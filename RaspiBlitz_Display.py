@@ -1,9 +1,13 @@
+import os
 import requests
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import matplotlib.ticker as ticker
 import datetime
 import matplotlib.dates as mdates  # Import the mdates module
+
+# Get the current working directory where the script is located
+current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Define the Coinbase Pro API endpoints
 base_url = 'https://api.pro.coinbase.com'
@@ -76,12 +80,12 @@ lines1, labels1 = ax1.get_legend_handles_labels()
 lines2, labels2 = ax2.get_legend_handles_labels()
 lines = lines1 + lines2
 labels = labels1 + labels2
-ax1.legend(lines, labels, loc='upper center')
+ax1.legend(lines, labels, loc='best')
 
 # Set the title
 plt.title('Bitcoin and Ether Prices (Last 24 Hours)')
 
-# Create timestamps every 6 hours
+# Create timestamps every x hours
 interval = 3  # hours
 timestamps_x = []
 for i in range(0, len(timestamps_bitcoin), interval):
@@ -103,3 +107,9 @@ plt.savefig('crypto_prices.png')
 
 # Optionally, you can close the plot to release resources
 plt.close()
+
+# Specify the file path to save the image in the current directory
+image_file_path = os.path.join(current_directory, 'crypto_prices.png')
+
+# Print the file path where the image is saved
+# print(f'Image saved to: {image_file_path}')
